@@ -25,15 +25,15 @@ function write(p, value) {
 }
 function emptyObject(p, name) {
   const src = read(p);
-  if (new RegExp("export\s+const\s+" + name + "\s*:\s*Record<string, any>\s*=\s*\{\s*\}\s*;").test(src)) return;
-  const re = new RegExp("(export\s+const\s+" + name + "\b[^=]*=\s*\{)[\s\S]*?\n\};");
+  if (new RegExp("export\\s+const\\s+" + name + "\\s*:\\s*Record<string, any>\\s*=\\s*\\{\\s*\\}\\s*;").test(src)) return;
+  const re = new RegExp("(export\\s+const\\s+" + name + "\\b[^=]*=\\s*\\{)[\\s\\S]*?\\n\\};");
   if (!re.test(src)) throw new Error("Cannot locate provider map " + name + " in " + p);
   write(p, src.replace(re, "export const " + name + ": Record<string, any> = {};"));
 }
 function patchExecutorMap(p, name, typeName) {
   const src = read(p);
   if (src.includes(MARK)) return;
-  const re = new RegExp(name + ":[\s\S]*?=\s*\{[\s\S]*?\n\};");
+  const re = new RegExp(name + ":[\\s\\S]*?=\\s*\\{[\\s\\S]*?\\n\\};");
   if (!re.test(src)) throw new Error("Cannot locate executor map " + name + " in " + p);
   const replacement = MARK + "\n" + name + ": " + typeName + " = {\n" +
     '  antigravity: () => import("./antigravity.ts").then((m) => new m.AntigravityExecutor()),\n' +
