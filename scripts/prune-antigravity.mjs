@@ -15,7 +15,7 @@ const changed = [];
 function read(p) {
   const full = path.join(root, p);
   if (!fs.existsSync(full)) throw new Error("Expected upstream file missing: " + p);
-  return fs.readFileSync(full, "utf8");
+  return fs.readFileSync(full, "utf8").replace(/\r\n/g, "\n");
 }
 function write(p, value) {
   const full = path.join(root, p);
