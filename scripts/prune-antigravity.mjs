@@ -149,7 +149,7 @@ if (!main.includes(MARK)) {
   main = main.replace('env: {\n      ...serverEnv,\n      DATA_DIR: dataDir,',
     'env: {\n      ...serverEnv,\n      ANTIGRAVITY_ROUTE_DESKTOP: "1",\n      DATA_DIR: dataDir,');
   main = main.replace('path.join(appData, "omniroute")', 'path.join(appData, "entigravity-route-desktop")');
-  main = main.replace('path.join(xdg, "omniroute")', 'path.join(xdg, "entigravity-route-desktop")');
+  main = main.replace('path.join(path.resolve(xdg), "omniroute")', 'path.join(path.resolve(xdg), "entigravity-route-desktop")');
   main = main.replace('path.join(require("os").homedir(), ".omniroute")', 'path.join(require("os").homedir(), ".entigravity-route-desktop")');
   main = main.replace('async function checkForUpdates(silent = false) {\n  if (isDev) {',
     'async function checkForUpdates(silent = false) {\n  if (process.env.ANTIGRAVITY_ROUTE_DESKTOP === "1") return;\n  if (isDev) {');
