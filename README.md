@@ -1,51 +1,50 @@
-# Antigravity Route Desktop
+# Entigravity Route Desktop
 
-A Windows-focused, Google Antigravity-only API gateway derived from the MIT-licensed [OmniRoute](https://github.com/diegosouzapw/OmniRoute) project.
+A Windows-focused, Google Antigravity-only local API gateway based on the MIT-licensed [OmniRoute](https://github.com/diegosouzapw/OmniRoute) project.
 
-> **Status: initial scaffold only.** This repository does not yet contain a working desktop build or a verified Antigravity runtime. OAuth, streaming, tool calling, image/file handling, and DSH Desktop/Hermes compatibility must be implemented or ported and tested before a release is claimed.
+> **Build status:** the repository contains the build profile and an automated Windows build workflow. Do not treat a release as usable until the workflow succeeds and OAuth, streaming, tool calling, and client compatibility are verified.
 
 ## Goal
 
-Keep the proven Antigravity integration from OmniRoute while removing unrelated providers and optional features. The target is a smaller and easier-to-maintain Windows app, not a promise of a specific EXE/RAM reduction before benchmarking.
+Keep the working Antigravity and Antigravity CLI (`agy`) integration, while narrowing provider registries to those two surfaces. The goal is a smaller and easier-to-maintain Windows app; actual installer size and RAM reductions must be measured rather than assumed.
 
-## Intended first release
+## Windows build
 
-- Google Antigravity OAuth and token refresh, using the supported upstream flow.
-- Local OpenAI-compatible API endpoint with configurable API key.
-- Streaming responses and tool/function calling.
-- Model discovery/aliases for Antigravity models.
-- Basic account status, errors, quota/rate-limit feedback, and local logs with secrets redacted.
-- Windows desktop packaging.
-- Tested setup steps for DSH Desktop and Hermes.
+1. Open [Actions → Build Windows Antigravity-only app](https://github.com/trungkienute2016-bit/Entigravity-Route-Desktop/actions/workflows/build-windows.yml).
+2. Choose **Run workflow** or wait for a push to `main` that touches build/docs files.
+3. Open the completed run and download artifact `Entigravity-Route-Desktop-Windows`.
 
-Image/file support is a release gate: it must be tested end-to-end and must not be described as supported until verified.
+The workflow checks out OmniRoute at the pinned commit `7f3cbb046b3706bf0bbc047b7eaa0cbada8d9e50`, applies `scripts/prune-antigravity.mjs`, installs dependencies, and attempts a Windows Electron build. If upstream layout changes, the patcher is designed to fail rather than guess.
 
-## Upstream
+## Intended integration
 
-Initial source review is based on OmniRoute `release/v3.8.51`. Relevant entry points include:
+The app is intended to expose an OpenAI-compatible local endpoint so DSH Desktop and Hermes on Windows can connect with a Base URL and a locally configured API key. That API key is separate from the Google OAuth credential.
 
-- [Antigravity executor](https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/open-sse/executors/antigravity.ts)
-- [Antigravity OAuth provider](https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/src/lib/oauth/providers/antigravity.ts)
-- [Antigravity onboarding guide](https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/docs/guides/ANTIGRAVITY-ONBOARDING.md)
+The release must pass these checks before it is described as ready:
 
-This is not an official Google product. Antigravity access, model availability, quotas, and OAuth behavior are governed by Google and can change independently of this project.
+- Google OAuth callback, token refresh, re-login, and error handling.
+- Non-streaming and SSE streaming chat requests.
+- Tool/function calls and results.
+- Correct model listing and quota/rate-limit errors.
+- API-key enforcement and secret redaction in logs.
+- Image/file input where the upstream API path supports it.
+- Clean Windows launch and persistence.
+- DSH Desktop and Hermes connection tests.
 
-## Development principles
+## Source references
 
-1. Preserve applicable upstream copyright and MIT license notices.
-2. Keep upstream changes isolated and documented; do not blindly delete files based only on provider names.
-3. Remove a module only after checking the dependency/import graph and tests.
-4. Never commit OAuth tokens, API keys, user data, or local credential stores.
-5. Benchmark installer size, installed size, startup time, and idle RAM against the same upstream build before claiming improvements.
-6. Verify upstream terms and account rules before distributing binaries or automating account use.
+- [Antigravity executor](https://github.com/diegosouzapw/OmniRoute/blob/7f3cbb046b3706bf0bbc047b7eaa0cbada8d9e50/open-sse/executors/antigravity.ts)
+- [Antigravity OAuth provider](https://github.com/diegosouzapw/OmniRoute/blob/7f3cbb046b3706bf0bbc047b7eaa0cbada8d9e50/src/lib/oauth/providers/antigravity.ts)
+- [Antigravity onboarding notes](https://github.com/diegosouzapw/OmniRoute/blob/7f3cbb046b3706bf0bbc047b7eaa0cbada8d9e50/docs/guides/ANTIGRAVITY-ONBOARDING.md)
 
-## Current next steps
+## Security and scope
 
-- Map Antigravity OAuth, token refresh, executor, model aliases, OpenAI request translation, streaming, and desktop packaging dependencies.
-- Separate the minimum Antigravity runtime from provider-specific UI and adapters.
-- Add unit/contract tests for OAuth callbacks, non-streaming, SSE streaming, tool calls, errors, and cancellation.
-- Build and smoke-test on Windows, then validate configuration in DSH Desktop and Hermes.
+- This is an independent project and is not an official Google product.
+- It does not add anti-detection or identity-spoofing behavior. Provider pruning is for scope and maintainability, not a guarantee against upstream enforcement.
+- Keep OAuth tokens, API keys, user data, and local databases out of source control.
+- Preserve applicable upstream copyright/license notices in redistributed source and binaries.
+- Google Antigravity availability, model access, quotas, OAuth behavior, and applicable terms can change independently of this project.
 
 ## License
 
-This project is intended to retain the upstream MIT license. See [LICENSE](LICENSE) and the upstream repository for copyright notices that must remain with reused code.
+See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
