@@ -67,6 +67,10 @@ jobs:
         run: |
           node -e "require('@swc/core'); console.log('SWC native binding loaded successfully')"
 
+      - name: Install Electron dependencies
+        working-directory: upstream/electron
+        run: npm ci --no-audit --no-fund
+
       - name: Build Windows installer and portable app
         working-directory: upstream
         env:
