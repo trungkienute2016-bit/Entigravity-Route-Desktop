@@ -1,0 +1,73 @@
+name: Build Windows Antigravity-only app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Entigravity Route Desktop
+        uses: actions/checkout@v4
+        with:
+          path: app
+
+      - name: Checkout pinned OmniRoute source
+        uses: actions/checkout@v4
+        with:
+          repository: diegosouzapw/OmniRoute
+          ref: 7f3cbb046b3706bf0bbc047b7eaa0cbada8d9e50
+          path: upstream
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+
+      - name: Apply Antigravity-only build profile
+        shell: pwsh
+        run: node app/scripts/prune-antigravity.mjs --root upstream
+
+      - name: Verify provider pruning
+        shell: pwsh
+        run: |
+          $executor = Get-Content upstream/open-sse/executors/index.ts -Raw
+          if ($executor -match 'github:|codex:|claude:') { throw "Unrelated executor still registered" }
+          if ($executor -notmatch 'antigravity:' -or $executor -notmatch 'agy:') { throw "Antigravity executors missing" }
+          $oauth = Get-Content upstream/src/lib/oauth/providers/index.ts -Raw
+          if ($oauth -match 'import \{ (claude|codex|github|qoder) \}') { throw "Unrelated OAuth provider still registered" }
+          $package = Get-Content upstream/electron/package.json -Raw | ConvertFrom-Json
+          if ($package.build.productName -ne "Entigravity Route Desktop") { throw "Desktop branding patch missing" }
+
+      - name: Install dependencies
+        working-directory: upstream
+        run: npm ci
+
+      - name: Build Windows installer and portable app
+        working-directory: upstream
+        run: npm run electron:build:win
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Entigravity-Route-Desktop-Windows
+          path: |
+            upstream/electron/dist-electron/*.exe
+            upstream/electron/dist-electron/*.yml
+            upstream/electron/dist-electron/*.blockmap
+          if-no-files-found: error
+          retention-days: 14
