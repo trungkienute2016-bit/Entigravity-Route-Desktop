@@ -35,7 +35,7 @@ function patchExecutorMap(p, name, typeName) {
   if (src.includes(MARK)) return;
   const re = new RegExp(name + ":[\\s\\S]*?=\\s*\\{[\\s\\S]*?\\n\\};");
   if (!re.test(src)) throw new Error("Cannot locate executor map " + name + " in " + p);
-  const replacement = MARK + "\n" + name + ": " + typeName + " = {\n" +
+  const replacement = "/* " + MARK + " */\n" + name + ": " + typeName + " = {\n" +
     '  antigravity: () => import("./antigravity.ts").then((m) => new m.AntigravityExecutor()),\n' +
     '  agy: () => import("./antigravity.ts").then((m) => new m.AntigravityExecutor()),\n};';
   write(p, src.replace(re, replacement));
