@@ -34,7 +34,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.2
+          node-version: 24
           cache: npm
           cache-dependency-path: upstream/package-lock.json
 
@@ -55,10 +55,22 @@ jobs:
 
       - name: Install dependencies
         working-directory: upstream
+        env:
+          NPM_CONFIG_LEGACY_PEER_DEPS: true
         run: npm ci
+
+      - name: Verify SWC native binding
+        working-directory: upstream
+        shell: pwsh
+        env:
+          SWC_NATIVE_BINDING_CACHE: "0"
+        run: |
+          node -e "require('@swc/core'); console.log('SWC native binding loaded successfully')"
 
       - name: Build Windows installer and portable app
         working-directory: upstream
+        env:
+          SWC_NATIVE_BINDING_CACHE: "0"
         run: npm run electron:build:win
 
       - name: Upload Windows artifacts
